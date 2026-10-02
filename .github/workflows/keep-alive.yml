@@ -1,0 +1,23 @@
+name: Free Tier Keep-Alive Ping
+
+on:
+  schedule:
+    # Run every 10 minutes to prevent Render free-tier cold starts
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping-health:
+    name: Keep-Alive HTTP Probe
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ping Backend Health Endpoint
+        run: |
+          BACKEND_URL="${{ secrets.PRODUCTION_BACKEND_URL }}"
+          if [ -z "$BACKEND_URL" ]; then
+            BACKEND_URL="https://queuesmart-backend.onrender.com"
+          fi
+          echo "Pinging health check at $BACKEND_URL/health..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BACKEND_URL/health" || true)
+          echo "Health probe returned HTTP status: $STATUS"

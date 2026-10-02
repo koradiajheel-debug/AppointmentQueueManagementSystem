@@ -1,0 +1,62 @@
+{
+  "app_name": "QueueSmart (कतारस्मार्ट)",
+  "tagline": "आधुनिक कतार और अपॉइंटमेंट प्रबंधन प्रणाली",
+  "nav": {
+    "home": "होम",
+    "book_slot": "स्लॉट बुक करें",
+    "join_queue": "कतार में शामिल हों",
+    "my_tickets": "मेरे टोकन",
+    "appointments": "अपॉइंटमेंट्स",
+    "notifications": "सूचनाएं",
+    "profile": "प्रोफ़ाइल",
+    "login": "लॉग इन",
+    "register": "पंजीकरण",
+    "logout": "लॉग आउट",
+    "admin_console": "एडमिन कंसोल",
+    "counters": "काउंटर",
+    "analytics": "एनालिटिक्स",
+    "display": "लॉबी डिस्प्ले",
+    "kiosk": "टोकन कियोस्क",
+    "settings": "सेटिंग्स"
+  },
+  "queue": {
+    "live_ticket": "लाइव टोकन",
+    "token_number": "टोकन संख्या",
+    "people_ahead": "आगे कतार में लोग",
+    "estimated_wait": "अनुमानित प्रतीक्षा समय",
+    "eta_confidence": "सटीकता अनुमान",
+    "leave_now": "निकलने का समय",
+    "travel_time": "यात्रा का अनुमानित समय",
+    "leave_queue": "कतार छोड़ें",
+    "swap_slot": "समय बदलें",
+    "check_in_qr": "चेक-इन क्यूआर कोड",
+    "now_serving": "वर्तमान सेवा",
+    "counter": "काउंटर",
+    "called_alert": "आपकी बारी आ गई है! कृपया काउंटर पर जाएं",
+    "waiting_status": "कतार में प्रतीक्षारत",
+    "group_booking": "परिवार / समूह आकार",
+    "priority_tier": "प्राथमिकता श्रेणी",
+    "upload_proof": "दस्तावेज़ प्रमाण अपलोड करें (वैकल्पिक)"
+  },
+  "common": {
+    "loading": "लोड हो रहा है...",
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "confirm": "पुष्टि करें",
+    "submit": "जमा करें",
+    "search": "खोजें...",
+    "error": "त्रुटि उत्पन्न हुई",
+    "success": "सफलता",
+    "offline_warning": "आप ऑफ़लाइन हैं। कनेक्शन आने पर सिंक होगा।",
+    "server_waking": "सर्वर शुरू हो रहा है, कृपया प्रतीक्षा करें...",
+    "retry": "पुनः प्रयास करें",
+    "back": "वापस जाएं"
+  },
+  "priorities": {
+    "NORMAL": "सामान्य",
+    "SENIOR": "वरिष्ठ नागरिक (60+)",
+    "DISABLED": "दिव्यांग",
+    "PREGNANT": "गर्भवती महिला",
+    "EMERGENCY": "आपातकालीन"
+  }
+}

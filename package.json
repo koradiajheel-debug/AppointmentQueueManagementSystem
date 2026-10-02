@@ -1,0 +1,22 @@
+{
+  "name": "queuesmart-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "server"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:customer": "npm run dev --workspace=@queuesmart/customer-portal",
+    "dev:admin": "npm run dev --workspace=@queuesmart/admin-portal",
+    "dev:server": "npm run dev --workspace=@queuesmart/server",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

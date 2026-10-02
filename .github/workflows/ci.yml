@@ -1,0 +1,40 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  validate-and-test:
+    name: Lint, Typecheck & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate Prisma Schema & Generate Client
+        run: |
+          cd server
+          npx prisma validate
+          npx prisma generate
+
+      - name: Typecheck Monorepo (TypeScript)
+        run: npm run lint --workspaces --if-present
+
+      - name: Run Backend Unit & Integration Tests (Jest)
+        run: npm test --workspace=@queuesmart/server
+
+      - name: Build Monorepo (Portals & Server)
+        run: npm run build --workspaces --if-present

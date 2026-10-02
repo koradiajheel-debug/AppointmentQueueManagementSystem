@@ -1,0 +1,62 @@
+{
+  "app_name": "QueueSmart",
+  "tagline": "Next-Gen Queue & Appointment Management",
+  "nav": {
+    "home": "Home",
+    "book_slot": "Book Slot",
+    "join_queue": "Join Queue",
+    "my_tickets": "My Tickets",
+    "appointments": "Appointments",
+    "notifications": "Notifications",
+    "profile": "Profile",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "admin_console": "Admin Console",
+    "counters": "Counters",
+    "analytics": "Analytics",
+    "display": "Lobby Display",
+    "kiosk": "Self Kiosk",
+    "settings": "Settings"
+  },
+  "queue": {
+    "live_ticket": "Live Token",
+    "token_number": "Token Number",
+    "people_ahead": "People Ahead",
+    "estimated_wait": "Estimated Wait",
+    "eta_confidence": "Estimated accuracy",
+    "leave_now": "Leave Now Timer",
+    "travel_time": "Estimated travel time",
+    "leave_queue": "Leave Queue",
+    "swap_slot": "Swap Slot / Reschedule",
+    "check_in_qr": "Check-in QR Code",
+    "now_serving": "Now Serving",
+    "counter": "Counter",
+    "called_alert": "It is your turn! Please proceed to Counter",
+    "waiting_status": "Waiting in Queue",
+    "group_booking": "Family / Group Size",
+    "priority_tier": "Priority Category",
+    "upload_proof": "Upload Supporting Proof (Optional)"
+  },
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "submit": "Submit",
+    "search": "Search...",
+    "error": "An error occurred",
+    "success": "Success",
+    "offline_warning": "You are currently offline. Actions will sync when connection is restored.",
+    "server_waking": "Backend is waking up (Render/Cloud free-tier spin-up). Please wait...",
+    "retry": "Retry",
+    "back": "Back"
+  },
+  "priorities": {
+    "NORMAL": "Standard",
+    "SENIOR": "Senior Citizen (60+)",
+    "DISABLED": "Differently Abled",
+    "PREGNANT": "Expectant Mother",
+    "EMERGENCY": "Emergency"
+  }
+}

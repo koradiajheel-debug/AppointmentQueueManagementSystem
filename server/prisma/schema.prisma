@@ -1,0 +1,319 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  CITIZEN
+  STAFF
+  ADMIN
+}
+
+enum OrgType {
+  CLINIC
+  BANK
+  SERVICE_CENTER
+  COLLEGE
+}
+
+enum CounterStatus {
+  OPEN
+  BREAK
+  CLOSED
+}
+
+enum AppointmentStatus {
+  BOOKED
+  CHECKED_IN
+  IN_SERVICE
+  COMPLETED
+  NO_SHOW
+  CANCELLED
+}
+
+enum TicketType {
+  WALKIN
+  APPOINTMENT
+}
+
+enum PriorityTier {
+  NORMAL
+  SENIOR
+  DISABLED
+  PREGNANT
+  EMERGENCY
+}
+
+enum TicketStatus {
+  WAITING
+  CALLED
+  SERVING
+  DONE
+  SKIPPED
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ALERT
+}
+
+model Organization {
+  id        String     @id @default(uuid())
+  name      String
+  code      String     @unique
+  type      OrgType    @default(CLINIC)
+  branches  Branch[]
+  users     User[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([code])
+}
+
+model Branch {
+  id              String         @id @default(uuid())
+  organizationId  String
+  organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name            String
+  address         String
+  city            String
+  phone           String
+  latitude        Float
+  longitude       Float
+  operatingHours  Json           // { open: "08:30", close: "18:00", lunchStart: "13:00", lunchEnd: "14:00", workingDays: [1,2,3,4,5,6] }
+  services        Service[]
+  counters        Counter[]
+  users           User[]
+  appointments    Appointment[]
+  queueTickets    QueueTicket[]
+  holidays        Holiday[]
+  blockedSlots    BlockedSlot[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([organizationId])
+  @@index([city])
+}
+
+model Service {
+  id              String         @id @default(uuid())
+  branchId        String
+  branch          Branch         @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  name            String
+  description     String
+  avgDurationMin  Int            @default(15)
+  priorityAllowed Boolean        @default(true)
+  slaMinutes      Int            @default(20)
+  category        String?
+  isActive        Boolean        @default(true)
+  appointments    Appointment[]
+  queueTickets    QueueTicket[]
+  serviceLogs     ServiceLog[]
+  blockedSlots    BlockedSlot[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([branchId])
+}
+
+model Counter {
+  id                String         @id @default(uuid())
+  branchId          String
+  branch            Branch         @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  counterNumber     String
+  name              String
+  status            CounterStatus  @default(OPEN)
+  servicesOffered   String[]       // Array of Service IDs
+  currentTicketId   String?
+  staffUserId       String?
+  servingStartedAt  DateTime?
+  serviceLogs       ServiceLog[]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@unique([branchId, counterNumber])
+  @@index([branchId, status])
+}
+
+model User {
+  id                String         @id @default(uuid())
+  email             String         @unique
+  passwordHash      String
+  name              String
+  phone             String
+  role              UserRole       @default(CITIZEN)
+  organizationId    String?
+  organization      Organization?  @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  branchId          String?
+  branch            Branch?        @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  refreshTokenHash  String?
+  appointments      Appointment[]
+  queueTickets      QueueTicket[]
+  notifications     Notification[]
+  auditLogs         AuditLog[]
+  deviceTokens      DeviceToken[]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([email])
+  @@index([role, branchId])
+}
+
+model Appointment {
+  id              String            @id @default(uuid())
+  userId          String
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userName        String
+  userPhone       String
+  userEmail       String?
+  serviceId       String
+  service         Service           @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  branchId        String
+  branch          Branch            @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  slotStart       DateTime
+  slotEnd         DateTime
+  status          AppointmentStatus @default(BOOKED)
+  notes           String?
+  qrCode          String?
+  isGroup         Boolean           @default(false)
+  groupSize       Int               @default(1)
+  priorityTier    PriorityTier      @default(NORMAL)
+  ticketId        String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([branchId, serviceId, slotStart])
+  @@index([userId, status])
+  @@index([slotStart, slotEnd])
+}
+
+model QueueTicket {
+  id              String         @id @default(uuid())
+  tokenNo         String         // e.g. "A-101"
+  type            TicketType     @default(WALKIN)
+  priorityTier    PriorityTier   @default(NORMAL)
+  status          TicketStatus   @default(WAITING)
+  etaMinutes      Int            @default(15)
+  peopleAhead     Int            @default(0)
+  joinedAt        DateTime       @default(now())
+  calledAt        DateTime?
+  servingAt       DateTime?
+  completedAt     DateTime?
+  userId          String?
+  user            User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userName        String
+  userPhone       String
+  serviceId       String
+  service         Service        @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  branchId        String
+  branch          Branch         @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  counterId       String?
+  counterNumber   String?
+  priorityReason  String?
+  priorityProofUrl String?
+  isGroup         Boolean        @default(false)
+  groupSize       Int            @default(1)
+  reorderReason   String?
+  serviceLogs     ServiceLog[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([branchId, status, priorityTier])
+  @@index([serviceId, status])
+  @@index([tokenNo])
+}
+
+model ServiceLog {
+  id              String         @id @default(uuid())
+  ticketId        String
+  ticket          QueueTicket    @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  tokenNo         String
+  counterId       String
+  counter         Counter        @relation(fields: [counterId], references: [id], onDelete: Cascade)
+  counterNumber   String
+  serviceId       String
+  service         Service        @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  startedAt       DateTime
+  endedAt         DateTime
+  durationMinutes Float
+  status          String         @default("COMPLETED")
+  createdAt       DateTime       @default(now())
+
+  @@index([counterId, startedAt])
+  @@index([serviceId, startedAt])
+}
+
+model Notification {
+  id          String           @id @default(uuid())
+  userId      String?
+  user        User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ticketId    String?
+  title       String
+  message     String
+  type        NotificationType @default(INFO)
+  read        Boolean          @default(false)
+  channel     String           @default("IN_APP")
+  createdAt   DateTime         @default(now())
+
+  @@index([userId, read])
+}
+
+model AuditLog {
+  id          String     @id @default(uuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userName    String
+  action      String
+  entity      String
+  entityId    String
+  details     Json?
+  ipAddress   String?
+  createdAt   DateTime   @default(now())
+
+  @@index([userId, createdAt])
+  @@index([entity, entityId])
+}
+
+model DeviceToken {
+  id          String     @id @default(uuid())
+  token       String     @unique
+  userId      String?
+  user        User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceType  String     @default("web")
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([token])
+}
+
+model Holiday {
+  id        String   @id @default(uuid())
+  branchId  String
+  branch    Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  date      String   // YYYY-MM-DD
+  name      String
+  createdAt DateTime @default(now())
+
+  @@unique([branchId, date])
+}
+
+model BlockedSlot {
+  id        String   @id @default(uuid())
+  branchId  String
+  branch    Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  serviceId String?
+  service   Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  startTime DateTime
+  endTime   DateTime
+  reason    String
+  createdAt DateTime @default(now())
+
+  @@index([branchId, startTime, endTime])
+}

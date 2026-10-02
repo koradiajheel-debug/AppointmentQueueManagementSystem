@@ -1,0 +1,23 @@
+# QueueSmart Monorepo Code Ownership
+
+# Global fallback
+* @queuesmart/core-team
+
+# Backend Core & Infrastructure
+/server/ @queuesmart/backend-engineers
+/prisma/ @queuesmart/backend-engineers
+render.yaml @queuesmart/devops
+railway.json @queuesmart/devops
+.github/ @queuesmart/devops
+
+# Customer Portal (Citizen PWA)
+/apps/customer-portal/ @queuesmart/frontend-engineers
+
+# Admin & Staff Operations Portal
+/apps/admin-portal/ @queuesmart/frontend-engineers
+
+# Shared UI, Tokens, Schemas & API Client
+/packages/shared/ @queuesmart/frontend-engineers @queuesmart/backend-engineers
+
+# Documentation & API Contracts
+/docs/ @queuesmart/core-team

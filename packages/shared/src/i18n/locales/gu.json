@@ -1,0 +1,62 @@
+{
+  "app_name": "QueueSmart (કતારસ્માર્ટ)",
+  "tagline": "આધુનિક કતાર અને એપોઇન્ટમેન્ટ મેનેજમેન્ટ સિસ્ટમ",
+  "nav": {
+    "home": "હોમ",
+    "book_slot": "સ્લોટ બુક કરો",
+    "join_queue": "કતારમાં જોડાઓ",
+    "my_tickets": "મારા ટોકન",
+    "appointments": "એપોઇન્ટમેન્ટ્સ",
+    "notifications": "સૂચનાઓ",
+    "profile": "પ્રોફાઇલ",
+    "login": "લોગ ઇન",
+    "register": "નોંધણી",
+    "logout": "લોગ આઉટ",
+    "admin_console": "એડમિન કન્સોલ",
+    "counters": "કાઉન્ટર",
+    "analytics": "વિશ્લેષણ",
+    "display": "લોબી ડિસ્પ્લે",
+    "kiosk": "કિયોસ્ક",
+    "settings": "સેટિંગ્સ"
+  },
+  "queue": {
+    "live_ticket": "લાઇવ ટોકન",
+    "token_number": "ટોકન નંબર",
+    "people_ahead": "આગળ લોકોની સંખ્યા",
+    "estimated_wait": "અંદાજિત પ્રતીક્ષા સમય",
+    "eta_confidence": "ચોકસાઈ અનુમાન",
+    "leave_now": "નીકળવાનો સમય",
+    "travel_time": "મુસાફરીનો અંદાજિત સમય",
+    "leave_queue": "કતાર છોડો",
+    "swap_slot": "સમય બદલો",
+    "check_in_qr": "ચેક-ઇન QR કોડ",
+    "now_serving": "હાલમાં સેવારત",
+    "counter": "કાઉન્ટર",
+    "called_alert": "તમારો વારો આવી ગયો છે! કૃપા કરીને કાઉન્ટર પર જાઓ",
+    "waiting_status": "કતારમાં પ્રતીક્ષા કરી રહ્યાં છો",
+    "group_booking": "કુટુંબ / જૂથનું કદ",
+    "priority_tier": "પ્રાથમિકતા શ્રેણી",
+    "upload_proof": "પુરાવા અપલોડ કરો (વૈકલ્પિક)"
+  },
+  "common": {
+    "loading": "લોડ થઈ રહ્યું છે...",
+    "save": "સાચવો",
+    "cancel": "રદ કરો",
+    "confirm": "ખાતરી કરો",
+    "submit": "સબમિટ કરો",
+    "search": "શોધો...",
+    "error": "ભૂલ આવી છે",
+    "success": "સફળતા",
+    "offline_warning": "તમે ઓફલાઇન છો. નેટવર્ક આવ્યે સુમેળ થશે.",
+    "server_waking": "સર્વર શરૂ થઈ રહ્યું છે, રાહ જુઓ...",
+    "retry": "ફરી પ્રયાસ કરો",
+    "back": "પાછા જાઓ"
+  },
+  "priorities": {
+    "NORMAL": "સામાન્ય",
+    "SENIOR": "વરિષ્ઠ નાગરિક (60+)",
+    "DISABLED": "દિવ્યાંગ",
+    "PREGNANT": "સગર્ભા બહેનો",
+    "EMERGENCY": "ઇમરજન્સી"
+  }
+}
