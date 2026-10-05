@@ -2,7 +2,7 @@
 // QueueSmart Shared Types & Enums
 // ==========================================
 
-export type UserRole = 'CITIZEN' | 'STAFF' | 'ADMIN';
+export type UserRole = 'CITIZEN' | 'STAFF' | 'ADMIN' | 'DOCTOR';
 
 export type CounterStatus = 'OPEN' | 'BREAK' | 'CLOSED';
 

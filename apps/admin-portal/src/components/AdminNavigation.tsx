@@ -16,6 +16,7 @@ import {
   Menu,
   X,
   User as UserIcon,
+  FileText,
 } from 'lucide-react';
 import { ThemeToggle, LanguageSelector } from '@queuesmart/shared';
 import { useAdminStore } from '../store/useAdminStore';
@@ -36,6 +37,7 @@ export const AdminSidebar: React.FC = () => {
     { to: '/calendar', label: 'Calendar', icon: CalendarDays },
     { to: '/manage', label: 'Manage & Places', icon: Settings2 },
     { to: '/analytics', label: 'Analytics', icon: BarChart3 },
+    { to: '/reports', label: 'Patient Reports', icon: FileText },
     { to: '/profile', label: 'Staff Profile', icon: UserIcon },
     { to: '/health', label: 'Health', icon: Activity },
   ];

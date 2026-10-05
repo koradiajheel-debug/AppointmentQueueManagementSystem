@@ -9,6 +9,7 @@ import {
   RefreshCw,
   Clock,
   ShieldCheck,
+  AlertTriangle,
 } from 'lucide-react';
 import { api, useToast, SystemHealth } from '@queuesmart/shared';
 
@@ -82,6 +83,26 @@ export const SystemHealthPage: React.FC = () => {
             {uptimeHours}h {uptimeMinutes}m
           </span>
         </div>
+      </div>
+
+      {/* Staff Bottleneck Alert */}
+      <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 flex items-start sm:items-center justify-between gap-4 animate-fadeIn">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+            <AlertTriangle className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-amber-800 dark:text-amber-300">
+              Staff Bottleneck Detected
+            </h3>
+            <p className="text-xs text-amber-700 dark:text-amber-400/80 mt-0.5">
+              Counter 02 is averaging <strong className="font-bold">35 minutes</strong> per patient (SLA Target: 15 mins).
+            </p>
+          </div>
+        </div>
+        <button className="shrink-0 px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold shadow-sm transition">
+          Review Counter Logs
+        </button>
       </div>
 
       {/* 3 Node Diagnostic Cards */}

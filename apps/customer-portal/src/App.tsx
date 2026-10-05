@@ -21,6 +21,8 @@ import { LiveTicketPage } from './pages/LiveTicketPage';
 import { MyAppointmentsPage } from './pages/MyAppointmentsPage';
 import { NotificationCenterPage } from './pages/NotificationCenterPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { GuidedTour } from './components/GuidedTour';
+import { SplashLoader } from './components/SplashLoader';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -69,6 +71,7 @@ export const App: React.FC = () => {
         <ToastProvider>
           <BrowserRouter>
             <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
+              <SplashLoader />
               <OfflineBanner />
               <ServerWakingUp />
               <PwaInstallBanner />
@@ -93,6 +96,7 @@ export const App: React.FC = () => {
               <BottomNav />
               <WebPushPermissionModal />
               <ServiceWorkerWatcher />
+              <GuidedTour />
             </div>
           </BrowserRouter>
         </ToastProvider>

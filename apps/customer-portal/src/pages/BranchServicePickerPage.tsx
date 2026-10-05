@@ -9,8 +9,10 @@ import {
   Calendar,
   ArrowRight,
   Sparkles,
+  Navigation as NavigationIcon,
+  Zap,
 } from 'lucide-react';
-import { api, Branch, Service } from '@queuesmart/shared';
+import { api, Branch, Service, useToast } from '@queuesmart/shared';
 
 export const BranchServicePickerPage: React.FC = () => {
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -19,7 +21,11 @@ export const BranchServicePickerPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
 
+  const [branchMetrics, setBranchMetrics] = useState<Record<string, { dist: string, time: string }>>({});
+  const [isLocating, setIsLocating] = useState(false);
+
   const [searchParams] = useSearchParams();
+  const { showToast } = useToast();
 
   useEffect(() => {
     const load = async () => {
@@ -51,6 +57,17 @@ export const BranchServicePickerPage: React.FC = () => {
       (s.category && s.category.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
+  const selectedIndex = branches.findIndex(b => b.id === selectedBranchId);
+  const selectedWaitTimeStr = ['12', '18', '25'][selectedIndex % 3] || '12';
+  const selectedWaitTime = parseInt(selectedWaitTimeStr, 10);
+  
+  // Find a faster alternative branch
+  const fasterBranchIndex = branches.findIndex((b, idx) => {
+    const time = parseInt(['12', '18', '25'][idx % 3], 10);
+    return time < selectedWaitTime - 10; // At least 10 mins faster
+  });
+  const fasterBranch = fasterBranchIndex !== -1 ? branches[fasterBranchIndex] : null;
+
   return (
     <div className="space-y-8 pb-16 font-sans">
       {/* Editorial Header */}
@@ -61,16 +78,89 @@ export const BranchServicePickerPage: React.FC = () => {
         <h1 className="text-3xl sm:text-4xl font-bold text-[#111827] dark:text-white tracking-tight font-newsreader mt-1">
           Explore Branches & Services
         </h1>
-        <p className="mt-1 text-sm text-[#4B5563] dark:text-slate-400">
-          Find your nearest branch, check real-time queue pacing, and select your required department.
-        </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-1">
+          <p className="text-sm text-[#4B5563] dark:text-slate-400">
+            Find your nearest branch, check real-time queue pacing, and select your required department.
+          </p>
+          <button
+            onClick={() => {
+              setIsLocating(true);
+              if (!navigator.geolocation) {
+                showToast('error', 'Geolocation not supported');
+                setIsLocating(false);
+                return;
+              }
+              navigator.geolocation.getCurrentPosition(
+                async (pos) => {
+                  const { latitude, longitude } = pos.coords;
+                  try {
+                    const metrics: Record<string, { dist: string, time: string }> = {};
+                    await Promise.all(branches.map(async (branch) => {
+                       const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${longitude},${latitude};${branch.longitude},${branch.latitude}?overview=false`;
+                       const res = await fetch(osrmUrl);
+                       const data = await res.json();
+                       if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+                         const distKm = (data.routes[0].distance / 1000).toFixed(1);
+                         const timeMin = Math.ceil(data.routes[0].duration / 60);
+                         metrics[branch.id] = { dist: `${distKm} km`, time: `${timeMin} min` };
+                       }
+                    }));
+                    setBranchMetrics(metrics);
+                    showToast('success', 'Distances updated based on your real-time location');
+                  } catch (e) {
+                    showToast('error', 'Failed to calculate distances');
+                  } finally {
+                    setIsLocating(false);
+                  }
+                },
+                (err) => {
+                  showToast('error', 'Location permission denied');
+                  setIsLocating(false);
+                }
+              );
+            }}
+            disabled={isLocating}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#F7F7F5] dark:bg-slate-800 text-[#0F4C5C] dark:text-teal-400 text-xs font-semibold hover:bg-[#E5E7EB] dark:hover:bg-slate-700 transition disabled:opacity-50 border border-[#E5E7EB] dark:border-slate-700"
+          >
+            <NavigationIcon className={`w-4 h-4 ${isLocating ? 'animate-pulse' : ''}`} />
+            <span>{isLocating ? 'Calculating...' : 'Find Nearest Branches'}</span>
+          </button>
+        </div>
       </div>
+
+      {/* Predictive Load Balancing Banner */}
+      {fasterBranch && (
+        <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fadeIn">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
+              <Zap className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-amber-800 dark:text-amber-200">
+                Smart Load Balancing Suggestion
+              </h4>
+              <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+                The {activeBranch?.name} is currently experiencing high wait times (~{selectedWaitTime} min). 
+                Want to be seen instantly? Switch to {fasterBranch.name}.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setSelectedBranchId(fasterBranch.id)}
+            className="shrink-0 px-4 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition shadow-sm"
+          >
+            Switch to {fasterBranch.name}
+          </button>
+        </div>
+      )}
 
       {/* Branch Selector Tabs (Matching Nearby Branches on Board) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {branches.map((branch, idx) => {
           const isSelected = branch.id === selectedBranchId;
-          const distances = ['2.3 km • 8 min', '4.8 km • 15 min', '7.1 km • 22 min'];
+          const fallbackDistances = ['2.3 km • 8 min', '4.8 km • 15 min', '7.1 km • 22 min'];
+          const metrics = branchMetrics[branch.id];
+          const displayDistance = metrics ? `${metrics.dist} • ${metrics.time}` : fallbackDistances[idx % fallbackDistances.length];
           const waitTimes = ['12 min', '18 min', '25 min'];
           const isGreen = idx === 0;
 
@@ -101,7 +191,7 @@ export const BranchServicePickerPage: React.FC = () => {
               </h3>
               <p className="text-xs text-[#6B7280] dark:text-slate-400 flex items-center gap-1 mt-0.5">
                 <MapPin className="w-3.5 h-3.5 text-[#9CA3AF] shrink-0" />
-                {branch.city} • {distances[idx % distances.length]}
+                {branch.city} • {displayDistance}
               </p>
 
               <div className="mt-4 pt-3 border-t border-[#E5E7EB]/80 dark:border-slate-800 flex items-center justify-between">

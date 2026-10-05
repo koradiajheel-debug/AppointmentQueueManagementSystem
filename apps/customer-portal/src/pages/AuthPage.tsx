@@ -125,7 +125,7 @@ export const AuthPage: React.FC = () => {
 
           <div>
             <label className="block text-xs font-medium text-[#4B5563] dark:text-slate-400 mb-1">
-              Email or Mobile
+              {isLogin ? 'Email or Mobile' : 'Email Address'}
             </label>
             <div className="relative">
               <Mail className="w-4 h-4 text-[#9CA3AF] absolute left-3 top-1/2 -translate-y-1/2" />
@@ -134,7 +134,9 @@ export const AuthPage: React.FC = () => {
                 required
                 value={isLogin ? emailOrPhone : email}
                 onChange={(e) => (isLogin ? setEmailOrPhone(e.target.value) : setEmail(e.target.value))}
-                placeholder="citizen@queuesmart.dev"
+                placeholder={isLogin ? "citizen@queuesmart.dev or +91..." : "citizen@queuesmart.dev"}
+                pattern={isLogin ? "^([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}|\\+?[0-9]{10,14})$" : "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"}
+                title={isLogin ? "Please enter a valid email address or a 10-14 digit mobile number" : "Please enter a valid email address"}
                 className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-[#E5E7EB] dark:border-slate-800 bg-white dark:bg-slate-900 text-xs text-[#111827] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F4C5C]"
               />
             </div>
@@ -153,6 +155,8 @@ export const AuthPage: React.FC = () => {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+91 98765 43210"
+                  pattern="^\+?[0-9]{10,14}$"
+                  title="Please enter a valid 10-14 digit mobile number (e.g. +919876543210)"
                   className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-[#E5E7EB] dark:border-slate-800 bg-white dark:bg-slate-900 text-xs text-[#111827] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F4C5C]"
                 />
               </div>
@@ -160,9 +164,20 @@ export const AuthPage: React.FC = () => {
           )}
 
           <div>
-            <label className="block text-xs font-medium text-[#4B5563] dark:text-slate-400 mb-1">
-              Password
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-medium text-[#4B5563] dark:text-slate-400">
+                Password
+              </label>
+              {isLogin && (
+                <button
+                  type="button"
+                  onClick={() => showToast('info', 'Password reset instructions have been sent to your email/phone if registered.', 'Check Inbox')}
+                  className="text-xs text-[#0F4C5C] dark:text-teal-400 hover:underline"
+                >
+                  Forgot Password?
+                </button>
+              )}
+            </div>
             <div className="relative">
               <Lock className="w-4 h-4 text-[#9CA3AF] absolute left-3 top-1/2 -translate-y-1/2" />
               <input
@@ -171,6 +186,8 @@ export const AuthPage: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
+                pattern="^.{6,}$"
+                title="Password must be at least 6 characters long."
                 className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-[#E5E7EB] dark:border-slate-800 bg-white dark:bg-slate-900 text-xs text-[#111827] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0F4C5C]"
               />
             </div>

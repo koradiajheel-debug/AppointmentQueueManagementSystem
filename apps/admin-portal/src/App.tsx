@@ -21,6 +21,7 @@ import { SystemHealthPage } from './pages/SystemHealthPage';
 import { LobbyTvDisplayPage } from './pages/LobbyTvDisplayPage';
 import { SelfKioskPage } from './pages/SelfKioskPage';
 import { AdminProfilePage } from './pages/AdminProfilePage';
+import { ReportsPage } from './pages/ReportsPage';
 import { useAdminStore } from './store/useAdminStore';
 
 const queryClient = new QueryClient({
@@ -34,7 +35,7 @@ const queryClient = new QueryClient({
 
 const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
-  const { currentUser, setBranches, setServices } = useAdminStore();
+  const { currentUser, setBranches, setServices, setCounters } = useAdminStore();
 
   const isStandalone =
     location.pathname === '/login' ||
@@ -48,10 +49,17 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     api.getServices().then((res) => {
       if (res.data) setServices(res.data);
     });
-  }, [setBranches, setServices]);
+    api.getCounters().then((res) => {
+      if (res.data) setCounters(res.data);
+    });
+  }, [setBranches, setServices, setCounters]);
 
   if (isStandalone) {
     return <>{children}</>;
+  }
+
+  if (!currentUser) {
+    return <Navigate to="/login" replace />;
   }
 
   return (
@@ -85,6 +93,7 @@ export const App: React.FC = () => {
                   <Route path="/analytics" element={<AnalyticsSimulatorPage />} />
                   <Route path="/profile" element={<AdminProfilePage />} />
                   <Route path="/health" element={<SystemHealthPage />} />
+                  <Route path="/reports" element={<ReportsPage />} />
                   <Route path="/display" element={<LobbyTvDisplayPage />} />
                   <Route path="/kiosk" element={<SelfKioskPage />} />
                   <Route path="*" element={<NotFoundPage homePath="/" />} />

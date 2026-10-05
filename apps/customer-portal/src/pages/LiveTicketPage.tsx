@@ -16,6 +16,8 @@ import {
   ShieldCheck,
   CheckCircle2,
   AlertCircle,
+  FileText,
+  Activity,
 } from 'lucide-react';
 import {
   Modal,
@@ -43,21 +45,67 @@ export const LiveTicketPage: React.FC = () => {
   const { showToast } = useToast();
   const navigate = useNavigate();
 
-  const [travelEstimate, setTravelEstimate] = useState<TravelTimeEstimate | null>({
-    originLat: 19.102,
-    originLng: 72.845,
-    destLat: 19.105,
-    destLng: 72.842,
-    distanceKm: 2.3,
-    travelMinutes: 6,
-    trafficLevel: 'LIGHT',
-    leaveByTime: new Date(Date.now() + 600000).toISOString(),
-    recommendedAction: 'PREPARE_TO_LEAVE',
-  });
+  const [travelEstimate, setTravelEstimate] = useState<TravelTimeEstimate | null>(null);
+
+  const requestLocationAndETA = () => {
+    setIsLocationLoading(true);
+    if (!navigator.geolocation) {
+      showToast('error', 'Geolocation is not supported by your browser');
+      setIsLocationLoading(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation({ lat: latitude, lng: longitude });
+
+        try {
+          const res = await api.getBranches();
+          const targetBranch = res.data?.find(b => b.id === (activeTicket?.branchId || 'branch-1')) || res.data?.[0];
+          
+          if (!targetBranch) throw new Error('Branch not found');
+
+          const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${longitude},${latitude};${targetBranch.longitude},${targetBranch.latitude}?overview=false`;
+          const osrmRes = await fetch(osrmUrl);
+          const data = await osrmRes.json();
+          
+          if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+            const travelMinutes = Math.ceil(data.routes[0].duration / 60);
+            const currentEta = activeTicket?.etaMinutes || 0;
+            
+            setTravelEstimate({
+              originLat: latitude,
+              originLng: longitude,
+              destLat: targetBranch.latitude,
+              destLng: targetBranch.longitude,
+              distanceKm: data.routes[0].distance / 1000,
+              travelMinutes,
+              trafficLevel: 'MODERATE',
+              leaveByTime: new Date(Date.now() + (Math.max(0, currentEta - travelMinutes) * 60000)).toISOString(),
+              recommendedAction: travelMinutes >= currentEta ? 'LEAVE_NOW' : 'PREPARE_TO_LEAVE',
+            });
+            showToast('success', 'Travel ETA calculated successfully');
+          }
+        } catch (e) {
+          showToast('error', 'Failed to calculate travel time');
+        } finally {
+          setIsLocationLoading(false);
+        }
+      },
+      (error) => {
+        showToast('error', 'Failed to get location. Please allow location access.');
+        setIsLocationLoading(false);
+      }
+    );
+  };
   const [branch, setBranch] = useState<Branch | null>(null);
   const [showQrModal, setShowQrModal] = useState(false);
-  const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [showQueueModal, setShowQueueModal] = useState(false);
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [showTriageModal, setShowTriageModal] = useState(false);
+  const [triageForm, setTriageForm] = useState({ symptoms: '', duration: '', severity: '3' });
+  const [triageSubmitted, setTriageSubmitted] = useState(false);
   const [leaveReason, setLeaveReason] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const hasAnnouncedRef = useRef(false);
@@ -295,11 +343,58 @@ export const LiveTicketPage: React.FC = () => {
           <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center shrink-0">
             <Car className="w-5 h-5" />
           </div>
-          <div className="text-xs">
-            <p className="font-semibold text-emerald-100">Near you? Leave when you're ~10 min away</p>
-            <p className="text-stone-300 mt-0.5">Live travel time: 6 min</p>
+          <div className="text-xs flex-1">
+            {!travelEstimate ? (
+              <div className="flex flex-col gap-1 items-start">
+                <p className="font-semibold text-emerald-100">Want to know when to leave?</p>
+                <button 
+                  onClick={requestLocationAndETA}
+                  disabled={isLocationLoading}
+                  className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-medium transition disabled:opacity-50 mt-1"
+                >
+                  {isLocationLoading ? 'Calculating...' : 'Share Location for ETA'}
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-0.5">
+                <p className="font-semibold text-emerald-100">
+                  {travelEstimate.travelMinutes >= ticket.etaMinutes 
+                    ? '⚠️ LEAVE NOW to reach on time!' 
+                    : `Leave in ~${ticket.etaMinutes - travelEstimate.travelMinutes} minutes`}
+                </p>
+                <p className="text-stone-300">Live travel time: {travelEstimate.travelMinutes} min</p>
+              </div>
+            )}
           </div>
         </div>
+
+        {/* AI Pre-Triage Action */}
+        {!triageSubmitted ? (
+          <button
+            type="button"
+            onClick={() => setShowTriageModal(true)}
+            className="w-full flex items-center justify-between p-4 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-100 transition relative z-10 group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                <Activity className="w-5 h-5" />
+              </div>
+              <div className="text-left">
+                <h4 className="text-sm font-bold text-white">AI Pre-Triage Form</h4>
+                <p className="text-xs text-stone-400">Save time. Describe symptoms now.</p>
+              </div>
+            </div>
+            <ArrowRight className="w-4 h-4 text-emerald-400 group-hover:translate-x-1 transition" />
+          </button>
+        ) : (
+          <div className="w-full flex items-center gap-3 p-4 rounded-2xl bg-[#0e3933]/90 border border-emerald-600/30 text-emerald-100 relative z-10">
+            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+            <div className="text-left flex-1 text-xs">
+              <span className="font-semibold block">Triage Submitted</span>
+              <span className="text-stone-300">Doctor has received your notes.</span>
+            </div>
+          </div>
+        )}
 
         {/* Sound toggle & manual refresh */}
         <div className="flex items-center justify-between text-xs text-stone-400 pt-2 border-t border-white/10 relative z-10">
@@ -400,6 +495,76 @@ export const LiveTicketPage: React.FC = () => {
                 <span className="text-xs text-stone-400">Waiting</span>
               </div>
               <span className="text-xs text-stone-400">~15 MIN</span>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* AI Triage Modal */}
+      {showTriageModal && (
+        <Modal isOpen={showTriageModal} onClose={() => setShowTriageModal(false)} title="AI Pre-Triage">
+          <div className="space-y-4 py-2">
+            <div className="p-3 rounded-xl bg-[#0F4C5C]/10 border border-[#0F4C5C]/20 text-xs text-[#0F4C5C] dark:text-teal-400">
+              This information will be summarized by AI and sent directly to the doctor's screen to save consultation time.
+            </div>
+            
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">What are your primary symptoms?</label>
+                <textarea 
+                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-[#0F4C5C] outline-none"
+                  rows={3}
+                  placeholder="E.g., Fever, mild headache, and sore throat..."
+                  value={triageForm.symptoms}
+                  onChange={e => setTriageForm({...triageForm, symptoms: e.target.value})}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">How long have you had these symptoms?</label>
+                <input 
+                  type="text"
+                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-[#0F4C5C] outline-none"
+                  placeholder="E.g., 3 days"
+                  value={triageForm.duration}
+                  onChange={e => setTriageForm({...triageForm, duration: e.target.value})}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Pain Severity (1-5)</label>
+                <input 
+                  type="range" min="1" max="5" 
+                  className="w-full accent-[#0F4C5C]"
+                  value={triageForm.severity}
+                  onChange={e => setTriageForm({...triageForm, severity: e.target.value})}
+                />
+                <div className="flex justify-between text-[10px] text-slate-500 mt-1">
+                  <span>1 - Mild</span>
+                  <span>5 - Severe</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowTriageModal(false)}
+                className="px-4 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowTriageModal(false);
+                  setTriageSubmitted(true);
+                  showToast('success', 'Triage notes sent securely to the doctor.');
+                }}
+                className="px-4 py-2 bg-[#0F4C5C] hover:bg-[#0B3A46] text-white text-xs font-medium rounded-xl shadow-sm transition"
+              >
+                Submit Notes
+              </button>
             </div>
           </div>
         </Modal>

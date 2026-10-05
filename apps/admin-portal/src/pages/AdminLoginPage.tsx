@@ -7,7 +7,7 @@ import { useAdminStore } from '../store/useAdminStore';
 export const AdminLoginPage: React.FC = () => {
   const [email, setEmail] = useState('admin@queuesmart.dev');
   const [password, setPassword] = useState('password123');
-  const [role, setRole] = useState<'ADMIN' | 'STAFF'>('ADMIN');
+  const [role, setRole] = useState<'ADMIN' | 'STAFF' | 'DOCTOR'>('ADMIN');
   const [isLoading, setIsLoading] = useState(false);
 
   const { setCurrentUser } = useAdminStore();
@@ -37,8 +37,8 @@ export const AdminLoginPage: React.FC = () => {
     }
   };
 
-  const handleQuickDemo = (demoRole: 'ADMIN' | 'STAFF') => {
-    const targetEmail = demoRole === 'ADMIN' ? 'admin@queuesmart.dev' : 'staff@queuesmart.dev';
+  const handleQuickDemo = (demoRole: 'ADMIN' | 'STAFF' | 'DOCTOR') => {
+    const targetEmail = demoRole === 'ADMIN' ? 'admin@queuesmart.dev' : demoRole === 'DOCTOR' ? 'doctor@queuesmart.dev' : 'staff@queuesmart.dev';
     setEmail(targetEmail);
     setRole(demoRole);
     api.adminLogin({ email: targetEmail, password: 'password123', role: demoRole }).then((res) => {
@@ -113,6 +113,7 @@ export const AdminLoginPage: React.FC = () => {
               >
                 <option value="ADMIN">Administrator (Full Telemetry & Settings)</option>
                 <option value="STAFF">Counter Staff (Queue Calling Terminal)</option>
+                <option value="DOCTOR">Doctor (View Medical Reports)</option>
               </select>
             </div>
 
@@ -130,18 +131,25 @@ export const AdminLoginPage: React.FC = () => {
             <span className="text-[11px] font-mono text-[#6B7280] dark:text-[#63847C] uppercase tracking-wider block text-center">
               Quick 1-Click Sandbox Logins
             </span>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => handleQuickDemo('STAFF')}
-                className="py-2.5 px-3 rounded-xl bg-[#F9FAFB] hover:bg-[#F3F4F6] dark:bg-[#0C221D] dark:hover:bg-[#112E27] border border-[#E5E7EB] dark:border-[#173D35] text-xs font-mono text-[#0F4C5C] dark:text-[#5EEAD4] font-medium transition"
+                className="py-2.5 px-3 rounded-xl bg-[#F9FAFB] hover:bg-[#F3F4F6] dark:bg-[#0C221D] dark:hover:bg-[#112E27] border border-[#E5E7EB] dark:border-[#173D35] text-[11px] font-mono text-[#0F4C5C] dark:text-[#5EEAD4] font-medium transition"
               >
-                Staff (Counter 02)
+                Staff (Counter)
+              </button>
+              <button
+                type="button"
+                onClick={() => handleQuickDemo('DOCTOR')}
+                className="py-2.5 px-3 rounded-xl bg-[#F9FAFB] hover:bg-[#F3F4F6] dark:bg-[#0C221D] dark:hover:bg-[#112E27] border border-[#E5E7EB] dark:border-[#173D35] text-[11px] font-mono text-[#0F4C5C] dark:text-[#5EEAD4] font-medium transition"
+              >
+                Doctor (Reports)
               </button>
               <button
                 type="button"
                 onClick={() => handleQuickDemo('ADMIN')}
-                className="py-2.5 px-3 rounded-xl bg-[#F9FAFB] hover:bg-[#F3F4F6] dark:bg-[#0C221D] dark:hover:bg-[#112E27] border border-[#E5E7EB] dark:border-[#173D35] text-xs font-mono text-[#0F4C5C] dark:text-[#5EEAD4] font-medium transition"
+                className="py-2.5 px-3 rounded-xl bg-[#F9FAFB] hover:bg-[#F3F4F6] dark:bg-[#0C221D] dark:hover:bg-[#112E27] border border-[#E5E7EB] dark:border-[#173D35] text-[11px] font-mono text-[#0F4C5C] dark:text-[#5EEAD4] font-medium transition"
               >
                 Super Admin
               </button>

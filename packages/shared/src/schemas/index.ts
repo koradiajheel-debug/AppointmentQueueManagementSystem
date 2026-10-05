@@ -17,7 +17,7 @@ export type LoginInput = z.infer<typeof LoginSchema>;
 export const AdminLoginSchema = z.object({
   email: z.string().email('Please enter a valid work email'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  role: z.enum(['STAFF', 'ADMIN']).default('STAFF'),
+  role: z.enum(['STAFF', 'ADMIN', 'DOCTOR']).default('STAFF'),
 });
 export type AdminLoginInput = z.infer<typeof AdminLoginSchema>;
 

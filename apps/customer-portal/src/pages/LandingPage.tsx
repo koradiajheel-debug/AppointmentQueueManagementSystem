@@ -17,13 +17,21 @@ import {
   TrendingDown,
   TrendingUp,
 } from 'lucide-react';
-import { api, Branch } from '@queuesmart/shared';
+import { api, Branch, Modal, useToast } from '@queuesmart/shared';
 import { useCustomerStore } from '../store/useCustomerStore';
 
 export const LandingPage: React.FC = () => {
   const { t } = useTranslation();
   const { user, activeTicket, appointments } = useCustomerStore();
   const [branches, setBranches] = useState<Branch[]>([]);
+  const [showPartnerModal, setShowPartnerModal] = useState(false);
+  const [partnerForm, setPartnerForm] = useState({
+    facilityName: '',
+    registrationNo: '',
+    doctorCount: '',
+    services: ''
+  });
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -487,6 +495,142 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* ============================================================== */}
+      {/* 5. BECOME A PARTNER / ONBOARD YOUR FACILITY                    */}
+      {/* ============================================================== */}
+      <section className="mt-8 p-8 sm:p-12 rounded-3xl bg-gradient-to-br from-[#F0FDF4] to-[#CCFBF1] dark:from-[#042F2E] dark:to-[#064E3B] border border-[#A7F3D0] dark:border-[#059669] shadow-sm relative overflow-hidden">
+        {/* Subtle background decoration */}
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/40 dark:bg-black/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-[#34D399]/20 dark:bg-[#10B981]/20 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="max-w-2xl">
+            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#059669]/10 dark:bg-[#A7F3D0]/10 border border-[#059669]/20 dark:border-[#A7F3D0]/20 text-[#065F46] dark:text-[#6EE7B7] font-mono text-[11px] font-bold w-fit mb-4">
+              <Sparkles className="w-3.5 h-3.5" />
+              FOR BUSINESSES & HOSPITALS
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-bold font-newsreader text-[#064E3B] dark:text-[#ECFDF5] tracking-tight leading-tight">
+              Bring your queue online. <br className="hidden sm:block" />
+              Upgrade your patient experience.
+            </h2>
+            <p className="text-sm sm:text-base text-[#065F46] dark:text-[#A7F3D0] mt-4 leading-relaxed">
+              Are you a hospital administrator, clinic owner, or service provider? Partner with QueueSmart to eliminate crowded waiting rooms. Get a dedicated operations portal, predictive analytics, and let your customers wait from the comfort of their homes.
+            </p>
+            
+            <div className="flex flex-wrap items-center gap-4 mt-8">
+              <button
+                onClick={() => setShowPartnerModal(true)}
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-[#059669] hover:bg-[#047857] text-white font-semibold shadow-md transition transform hover:-translate-y-0.5"
+              >
+                <span>Register Your Facility</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => alert("Contacting sales team...")}
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-white/60 hover:bg-white dark:bg-black/20 dark:hover:bg-black/40 text-[#064E3B] dark:text-[#6EE7B7] border border-[#059669]/20 dark:border-[#6EE7B7]/20 font-medium transition"
+              >
+                <span>Contact Sales</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="hidden md:flex shrink-0">
+            <div className="w-48 h-48 sm:w-56 sm:h-56 rounded-full border-8 border-white/50 dark:border-black/20 bg-gradient-to-tr from-[#34D399] to-[#059669] shadow-inner flex items-center justify-center relative">
+               <Building2 className="w-20 h-20 text-white" />
+               
+               {/* Floating Badges */}
+               <div className="absolute -top-2 -right-4 bg-white dark:bg-[#064E3B] p-3 rounded-2xl shadow-lg border border-emerald-100 dark:border-emerald-800 animate-bounce-slight">
+                 <Activity className="w-6 h-6 text-emerald-500" />
+               </div>
+               <div className="absolute bottom-4 -left-6 bg-white dark:bg-[#064E3B] p-3 rounded-2xl shadow-lg border border-emerald-100 dark:border-emerald-800 animate-bounce-slight" style={{ animationDelay: '1s' }}>
+                 <Users className="w-6 h-6 text-emerald-500" />
+               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Partner Registration Modal */}
+      {showPartnerModal && (
+        <Modal isOpen={showPartnerModal} onClose={() => setShowPartnerModal(false)} title="Register Your Facility">
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              setShowPartnerModal(false);
+              showToast('success', 'Your facility registration request has been submitted for legal verification.', 'Request Sent');
+              setPartnerForm({ facilityName: '', registrationNo: '', doctorCount: '', services: '' });
+            }} 
+            className="space-y-4 py-2"
+          >
+            <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-300">
+              <ShieldCheck className="w-4 h-4 inline-block mr-1.5" />
+              For security, all facilities must provide legal registration details for manual verification before their dashboard goes live.
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Facility / Hospital Name *</label>
+              <input 
+                type="text" required
+                className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-[#059669] outline-none"
+                placeholder="E.g., Citycare General Hospital"
+                value={partnerForm.facilityName}
+                onChange={e => setPartnerForm({...partnerForm, facilityName: e.target.value})}
+              />
+            </div>
+            
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Legal Business / Medical Registration Number *</label>
+              <input 
+                type="text" required
+                className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-[#059669] outline-none font-mono"
+                placeholder="E.g., MED-REG-12345"
+                value={partnerForm.registrationNo}
+                onChange={e => setPartnerForm({...partnerForm, registrationNo: e.target.value})}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Total Doctors/Counters *</label>
+                <input 
+                  type="number" min="1" required
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-[#059669] outline-none"
+                  placeholder="e.g. 5"
+                  value={partnerForm.doctorCount}
+                  onChange={e => setPartnerForm({...partnerForm, doctorCount: e.target.value})}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Primary Services</label>
+                <input 
+                  type="text" 
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-[#059669] outline-none"
+                  placeholder="OPD, Pathology..."
+                  value={partnerForm.services}
+                  onChange={e => setPartnerForm({...partnerForm, services: e.target.value})}
+                />
+              </div>
+            </div>
+
+            <div className="pt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowPartnerModal(false)}
+                className="px-4 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-[#059669] hover:bg-[#047857] text-white text-xs font-medium rounded-xl shadow-sm transition"
+              >
+                Submit for Verification
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
 
     </div>
   );

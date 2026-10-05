@@ -9,6 +9,8 @@ import {
   AlertTriangle,
   RotateCcw,
   ArrowRightLeft,
+  FileText,
+  Activity,
 } from 'lucide-react';
 import {
   api,
@@ -61,7 +63,10 @@ export const OperationsConsolePage: React.FC = () => {
   const [showSkipModal, setShowSkipModal] = useState(false);
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [showWalkinModal, setShowWalkinModal] = useState(false);
+  const [showDelayModal, setShowDelayModal] = useState(false);
   const [skipReason, setSkipReason] = useState('');
+  const [delayMinutes, setDelayMinutes] = useState('30');
+  const [delayReason, setDelayReason] = useState('Medical Emergency - Doctor attending critical patient');
   const [transferTarget, setTransferTarget] = useState('03');
   const [transferReason, setTransferReason] = useState('Requires diagnostic sample test');
 
@@ -108,6 +113,9 @@ export const OperationsConsolePage: React.FC = () => {
       } else if (e.key === 't' || e.key === 'T') {
         e.preventDefault();
         setShowTransferModal(true);
+      } else if (e.key === 'd' || e.key === 'D') {
+        e.preventDefault();
+        setShowDelayModal(true);
       }
     };
 
@@ -162,6 +170,15 @@ export const OperationsConsolePage: React.FC = () => {
       'Transfer Complete'
     );
     handleCallNext();
+  };
+
+  const handleDelayBroadcast = () => {
+    setShowDelayModal(false);
+    showToast(
+      'success',
+      `Push notification sent to all waiting citizens: ETA delayed by ${delayMinutes} mins.`,
+      'Broadcast Sent'
+    );
   };
 
   const handleWalkinRegister = (e: React.FormEvent) => {
@@ -241,8 +258,32 @@ export const OperationsConsolePage: React.FC = () => {
               </button>
             </div>
 
-            {/* Action Buttons Row: Skip (S) | Recall (R) | Transfer (T) */}
-            <div className="grid grid-cols-3 gap-3 pt-1">
+            {/* Auto-Fetched Patient History Panel */}
+            {activeTicket.status === 'SERVING' && (
+              <div className="mt-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
+                <div className="flex items-center gap-2 mb-3">
+                  <Activity className="w-4 h-4 text-indigo-500" />
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                    AI Auto-Fetched History
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 rounded-lg bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                    <span className="text-[10px] text-slate-500 block">Last Visit</span>
+                    <span className="text-xs font-medium text-slate-900 dark:text-white">12 Oct 2025 • Dr. Sharma</span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                    <span className="text-[10px] text-slate-500 block">Past Reports</span>
+                    <button className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 mt-0.5">
+                      <FileText className="w-3 h-3" /> View Blood Test.pdf
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons Row: Skip (S) | Recall (R) | Transfer (T) | Delay (D) */}
+            <div className="grid grid-cols-4 gap-3 pt-1">
               <button
                 type="button"
                 onClick={() => setShowSkipModal(true)}
@@ -266,8 +307,17 @@ export const OperationsConsolePage: React.FC = () => {
                 onClick={() => setShowTransferModal(true)}
                 className="p-3.5 rounded-xl border border-[#E5E7EB] dark:border-white/10 bg-[#F9FAFB] dark:bg-white/5 hover:bg-[#F3F4F6] dark:hover:bg-white/10 text-[#374151] dark:text-stone-300 text-xs font-medium transition text-center shadow-xs"
               >
-                <div className="font-semibold">Transfer Desk</div>
+                <div className="font-semibold">Smart Auto-Route</div>
                 <div className="text-[10px] text-[#6B7280] dark:text-stone-400 font-mono mt-0.5">Press T</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowDelayModal(true)}
+                className="p-3.5 rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-700 dark:text-rose-300 text-xs font-medium transition text-center shadow-xs"
+              >
+                <div className="font-semibold">Delay Alert</div>
+                <div className="text-[10px] text-rose-500/80 font-mono mt-0.5">Press D</div>
               </button>
             </div>
           </div>
@@ -438,30 +488,33 @@ export const OperationsConsolePage: React.FC = () => {
         </Modal>
       )}
 
-      {/* Transfer Modal */}
+      {/* Smart Auto-Routing Modal */}
       {showTransferModal && (
-        <Modal isOpen={showTransferModal} onClose={() => setShowTransferModal(false)} title={`Transfer Token ${activeTicket.tokenNo}`}>
+        <Modal isOpen={showTransferModal} onClose={() => setShowTransferModal(false)} title={`Auto-Route ${activeTicket.userName}`}>
           <div className="space-y-4 py-2 font-sans">
+            <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-xl text-indigo-700 dark:text-indigo-300 text-xs">
+              <strong>Multi-Queue Triage:</strong> Seamlessly inject this patient into another department's virtual queue without sending them back to the reception.
+            </div>
             <div>
-              <label className="text-xs text-[#6B7280] block mb-1">Target Counter</label>
+              <label className="text-xs text-[#6B7280] block mb-1">Target Department / Queue</label>
               <select
                 value={transferTarget}
                 onChange={(e) => setTransferTarget(e.target.value)}
                 className="w-full p-2.5 rounded-xl border border-[#D1D5DB] dark:border-stone-700 bg-white dark:bg-stone-800 text-xs text-[#111827] dark:text-white focus:ring-1 focus:ring-[#0F4C5C]"
               >
-                <option value="01">Counter 01 (General OPD)</option>
-                <option value="03">Counter 03 (Pathology Lab)</option>
-                <option value="04">Counter 04 (Pharmacy)</option>
+                <option value="Pathology">Pathology / Blood Test</option>
+                <option value="Pharmacy">Pharmacy Dispensing</option>
+                <option value="X-Ray">X-Ray / Imaging</option>
               </select>
             </div>
             <div>
-              <label className="text-xs text-[#6B7280] block mb-1">Transfer Note</label>
+              <label className="text-xs text-[#6B7280] block mb-1">Doctor's Internal Note</label>
               <input
                 type="text"
                 value={transferReason}
                 onChange={(e) => setTransferReason(e.target.value)}
                 className="w-full p-2.5 rounded-xl border border-[#D1D5DB] dark:border-stone-700 bg-white dark:bg-stone-800 text-xs text-[#111827] dark:text-white focus:ring-1 focus:ring-[#0F4C5C]"
-                placeholder="Reason for transfer..."
+                placeholder="E.g., Requires fasting blood sugar test..."
               />
             </div>
             <div className="flex justify-end gap-2 pt-2">
@@ -475,9 +528,56 @@ export const OperationsConsolePage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleTransfer}
-                className="px-4 py-2 rounded-full bg-[#0F4C5C] text-white text-xs font-medium hover:bg-[#0B3A46] shadow-xs"
+                className="px-4 py-2 rounded-full bg-[#0F4C5C] text-white text-xs font-medium hover:bg-[#0B3A46] shadow-xs flex items-center gap-2"
               >
-                Transfer Customer
+                <ArrowRightLeft className="w-3.5 h-3.5" />
+                Inject into Queue
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Delay Broadcast Modal */}
+      {showDelayModal && (
+        <Modal isOpen={showDelayModal} onClose={() => setShowDelayModal(false)} title="Broadcast Delay Alert">
+          <div className="space-y-4 py-2 font-sans">
+            <div className="p-3 bg-rose-50 border border-rose-100 rounded-xl text-rose-700 text-xs">
+              <strong>Warning:</strong> This will instantly notify all waiting citizens via push notification and update their live ETAs.
+            </div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Estimated Delay (Minutes)</label>
+              <input
+                type="number"
+                value={delayMinutes}
+                onChange={(e) => setDelayMinutes(e.target.value)}
+                className="w-full p-2.5 rounded-xl border border-[#D1D5DB] dark:border-stone-700 bg-white dark:bg-stone-800 text-xs text-[#111827] dark:text-white focus:ring-1 focus:ring-rose-500"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-[#6B7280] block mb-1">Reason for Broadcast</label>
+              <textarea
+                value={delayReason}
+                onChange={(e) => setDelayReason(e.target.value)}
+                className="w-full p-2.5 rounded-xl border border-[#D1D5DB] dark:border-stone-700 bg-white dark:bg-stone-800 text-xs text-[#111827] dark:text-white focus:ring-1 focus:ring-rose-500"
+                rows={3}
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowDelayModal(false)}
+                className="px-4 py-2 rounded-full border border-[#D1D5DB] text-xs font-medium text-[#4B5563]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDelayBroadcast}
+                className="px-4 py-2 rounded-full bg-rose-600 text-white text-xs font-medium hover:bg-rose-700 shadow-xs flex items-center gap-2"
+              >
+                <AlertTriangle className="w-3.5 h-3.5" />
+                Broadcast Alert
               </button>
             </div>
           </div>
