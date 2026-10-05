@@ -109,6 +109,14 @@ class ApiClient {
         role: 'CITIZEN',
         createdAt: new Date().toISOString(),
       };
+      
+      // Save to mock DB in localStorage so they can log back in
+      try {
+        const existing = JSON.parse(localStorage.getItem('queuesmart_mock_users') || '[]');
+        existing.push(user);
+        localStorage.setItem('queuesmart_mock_users', JSON.stringify(existing));
+      } catch (e) {}
+
       const token = `mock-citizen-jwt-${user.id}`;
       this.setToken(token, user);
       return { success: true, data: { token, user } };
@@ -131,10 +139,22 @@ class ApiClient {
   public async login(input: LoginInput): Promise<ApiResponse<{ token: string; user: User }>> {
     if (env.VITE_USE_MOCKS) {
       await new Promise((r) => setTimeout(r, 200));
-      const user = SEED_USERS.find((u) => u.role === 'CITIZEN') || SEED_USERS[0];
-      const token = `mock-citizen-jwt-${user.id}`;
-      this.setToken(token, user);
-      return { success: true, data: { token, user } };
+      
+      // Look up in mock DB
+      let user: User | undefined;
+      try {
+        const existing = JSON.parse(localStorage.getItem('queuesmart_mock_users') || '[]');
+        user = existing.find((u: any) => u.email === input.emailOrPhone || u.phone === input.emailOrPhone);
+      } catch (e) {}
+
+      // Fallback to default mock user (Rahul) if not found
+      if (!user) {
+        user = SEED_USERS.find((u) => u.role === 'CITIZEN') || SEED_USERS[0];
+      }
+
+      const token = `mock-citizen-jwt-${user!.id}`;
+      this.setToken(token, user!);
+      return { success: true, data: { token, user: user! } };
     }
 
     try {

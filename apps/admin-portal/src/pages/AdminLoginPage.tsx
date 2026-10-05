@@ -58,7 +58,12 @@ export const AdminLoginPage: React.FC = () => {
       <div className="max-w-md w-full space-y-6 relative z-10">
         <div className="text-center space-y-2">
           <div className="w-12 h-12 mx-auto rounded-xl bg-[#0F4C5C] border border-[#20697B] flex items-center justify-center text-white font-bold text-sm shadow-sm transition-transform hover:scale-105">
-            <div className="w-4 h-4 border-2 border-white rounded-[3px] rotate-45" />
+            <div className="grid grid-cols-2 gap-0.5">
+              <div className="w-2.5 h-2.5 rounded-[1.5px] bg-[#10B981]" />
+              <div className="w-2.5 h-2.5 rounded-[1.5px] bg-[#34D399]" />
+              <div className="w-2.5 h-2.5 rounded-[1.5px] bg-[#34D399]" />
+              <div className="w-2.5 h-2.5 rounded-[1.5px] bg-[#10B981]" />
+            </div>
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-[#111827] dark:text-white font-newsreader">
             QueueSmart Operations

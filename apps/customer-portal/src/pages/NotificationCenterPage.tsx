@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, CheckCheck, Trash2, Smartphone, MessageSquare, ShieldCheck } from 'lucide-react';
+import { Bell, CheckCheck, Trash2, ShieldCheck } from 'lucide-react';
 import { useToast } from '@queuesmart/shared';
 import { useCustomerStore } from '../store/useCustomerStore';
 
@@ -17,31 +17,6 @@ export const NotificationCenterPage: React.FC = () => {
     showToast('info', 'Notification history cleared', 'Cleared');
   };
 
-  const simulateSmsAlert = () => {
-    const newNotif = {
-      id: `notif-${Date.now()}`,
-      title: 'Transit Pacing SMS',
-      message: 'QueueSmart: Your token A-102 is 1 person away! Please proceed toward Counter 02.',
-      type: 'ALERT' as const,
-      read: false,
-      createdAt: new Date().toISOString(),
-    };
-    addNotification(newNotif);
-    showToast('warning', newNotif.message, 'SMS: Token Alert', 6000);
-  };
-
-  const simulateWhatsAppAlert = () => {
-    const newNotif = {
-      id: `notif-${Date.now()}`,
-      title: 'WhatsApp Ready Ping',
-      message: '✅ Main Branch Desk: Counter 02 is now ready for your consultation!',
-      type: 'SUCCESS' as const,
-      read: false,
-      createdAt: new Date().toISOString(),
-    };
-    addNotification(newNotif);
-    showToast('success', newNotif.message, 'WhatsApp Message', 6000);
-  };
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-20 px-4 font-sans">
@@ -53,9 +28,7 @@ export const NotificationCenterPage: React.FC = () => {
           <h1 className="text-3xl font-bold text-[#111827] dark:text-white tracking-tight font-newsreader mt-0.5">
             Notification Center
           </h1>
-          <p className="mt-1 text-xs sm:text-sm text-[#4B5563] dark:text-slate-400">
-            Real-time delivery log for SMS, WhatsApp alerts, and browser notifications.
-          </p>
+            Real-time delivery log for browser notifications and alerts.
         </div>
 
         {notifications.length > 0 && (
@@ -78,37 +51,7 @@ export const NotificationCenterPage: React.FC = () => {
         )}
       </div>
 
-      {/* Simulator Test Bar */}
-      <div className="p-4 rounded-2xl bg-[#F7F7F5] dark:bg-slate-800/40 border border-[#E5E7EB] dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <span className="text-xs font-semibold text-[#111827] dark:text-white block">
-            Test Alert Simulator
-          </span>
-          <span className="text-[11px] text-[#6B7280]">
-            Simulate channel delivery when your token is called:
-          </span>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={simulateSmsAlert}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700 text-xs font-medium text-[#1F2937] dark:text-white hover:border-[#0F4C5C] transition"
-          >
-            <Smartphone className="w-3.5 h-3.5 text-[#0F4C5C]" />
-            <span>Simulate SMS</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={simulateWhatsAppAlert}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700 text-xs font-medium text-[#1F2937] dark:text-white hover:border-[#10B981] transition"
-          >
-            <MessageSquare className="w-3.5 h-3.5 text-[#10B981]" />
-            <span>WhatsApp Ping</span>
-          </button>
-        </div>
-      </div>
 
       {/* Notification Stream */}
       <div className="space-y-3">

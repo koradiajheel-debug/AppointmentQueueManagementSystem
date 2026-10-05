@@ -87,7 +87,12 @@ export const AdminSidebar: React.FC = () => {
             className="flex items-center gap-2.5 group"
           >
             <div className="w-8 h-8 rounded-lg bg-[#0F4C5C] border border-[#20697B] flex items-center justify-center text-white font-bold text-xs shadow-sm transition-transform group-hover:scale-105">
-              <div className="w-3.5 h-3.5 border-2 border-white rounded-[3px] rotate-45" />
+              <div className="grid grid-cols-2 gap-[2px]">
+                <div className="w-1.5 h-1.5 rounded-[1px] bg-[#10B981]" />
+                <div className="w-1.5 h-1.5 rounded-[1px] bg-[#34D399]" />
+                <div className="w-1.5 h-1.5 rounded-[1px] bg-[#34D399]" />
+                <div className="w-1.5 h-1.5 rounded-[1px] bg-[#10B981]" />
+              </div>
             </div>
             <span className="font-bold text-xl tracking-tight text-[#111827] dark:text-white font-newsreader">
               QueueSmart
